@@ -1,20 +1,22 @@
 import { CircleMarker, GeoJSON, Tooltip } from "react-leaflet";
 
-function styleFeature() {
-  return {
-    fillColor: "#1f3f82",
-    fillOpacity: 0.12,
-    color: "transparent",
-    weight: 0,
-    opacity: 0,
-  };
+function getColor(score) {
+  if (score >= 80) return "#22c55e";
+  if (score >= 60) return "#84cc16";
+  if (score >= 40) return "#f97316";
+  return "#ef4444";
 }
+
+function styleFeature(feature) {
+  const score = feature.properties?.score ?? 50;
 
 function styleBoundary() {
   return {
-    color: "#81b9ff",
-    weight: 2.1,
-    opacity: 0.85,
+    fillColor: getColor(score),
+    fillOpacity: 0.28,
+    color: "#94a3b8",
+    weight: 1.2,
+    opacity: 0.7,
   };
 }
 
@@ -34,12 +36,14 @@ function onEachFeature(feature, layer) {
   layer.on({
     mouseover: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.2,
+        fillOpacity: 0.42,
+        weight: 2,
       });
     },
     mouseout: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.12,
+        fillOpacity: 0.28,
+        weight: 1.2,
       });
     },
     click: () => {
@@ -48,7 +52,7 @@ function onEachFeature(feature, layer) {
   });
 }
 
-export default function WardLayer({ data, boundaries, markers }) {
+export default function WardLayer({ data, markers }) {
   if (!data) {
     return null;
   }
@@ -56,7 +60,6 @@ export default function WardLayer({ data, boundaries, markers }) {
   return (
     <>
       <GeoJSON data={data} style={styleFeature} onEachFeature={onEachFeature} />
-      {boundaries && <GeoJSON data={boundaries} style={styleBoundary} interactive={false} />}
 
       {markers.map((marker) => (
         <CircleMarker
@@ -64,9 +67,9 @@ export default function WardLayer({ data, boundaries, markers }) {
           center={marker.center}
           radius={16}
           pathOptions={{
-            color: "#66a7ff",
-            fillColor: "#142f60",
-            fillOpacity: 0.7,
+            color: getColor(marker.score),
+            fillColor: getColor(marker.score),
+            fillOpacity: 0.35,
             weight: 2,
           }}
         >

@@ -13,10 +13,7 @@ export default function MapView() {
       .catch((err) => console.error(err));
   }, []);
 
-  const { zones, markers, boundaries } = useMemo(
-    () => buildMergedWards(wards, 22),
-    [wards],
-  );
+  const { zones, markers } = useMemo(() => buildMergedWards(wards, 22), [wards]);
 
   return (
     <MapContainer
@@ -27,7 +24,7 @@ export default function MapView() {
     >
       <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
 
-      <WardLayer data={zones} boundaries={boundaries} markers={markers} />
+      <WardLayer data={zones} markers={markers} />
 
       <TileLayer url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" />
     </MapContainer>

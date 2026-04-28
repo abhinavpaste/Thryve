@@ -135,15 +135,3 @@ code {
 .zone-count-tooltip::before {
   display: none;
 }
-
-.blue-theme-map .leaflet-tile {
-  filter: brightness(1.18) contrast(1.4) saturate(1.55) hue-rotate(18deg);
-}
-
-.blue-theme-map {
-  background: #061735;
-}
-
-.zone-count-tooltip {
-  text-shadow: 0 0 8px rgba(129, 185, 255, 0.75);
-}

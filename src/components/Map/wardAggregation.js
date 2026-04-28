@@ -102,91 +102,9 @@ function kMeans(points, clusterCount, maxIterations = 20) {
   return assignments;
 }
 
-function getPolygonRings(feature) {
-  if (!feature.geometry) {
-    return [];
-  }
-
-  if (feature.geometry.type === "Polygon") {
-    return feature.geometry.coordinates;
-  }
-
-  return feature.geometry.coordinates.flat();
-}
-
-function edgeKey(a, b) {
-  const round = (value) => Number.parseFloat(value.toFixed(6));
-  const p1 = [round(a[0]), round(a[1])];
-  const p2 = [round(b[0]), round(b[1])];
-
-  if (p1[0] < p2[0] || (p1[0] === p2[0] && p1[1] <= p2[1])) {
-    return `${p1[0]},${p1[1]}|${p2[0]},${p2[1]}`;
-  }
-
-  return `${p2[0]},${p2[1]}|${p1[0]},${p1[1]}`;
-}
-
-function buildZoneBoundaries(featuresByZone) {
-  const globalEdges = new Map();
-
-  featuresByZone.forEach((zoneFeatures, zoneId) => {
-    zoneFeatures.forEach((feature) => {
-      const rings = getPolygonRings(feature);
-
-      rings.forEach((ring) => {
-        for (let i = 0; i < ring.length - 1; i += 1) {
-          const start = ring[i];
-          const end = ring[i + 1];
-          const key = edgeKey(start, end);
-
-          if (!globalEdges.has(key)) {
-            globalEdges.set(key, {
-              start,
-              end,
-              byZone: new Map(),
-            });
-          }
-
-          const record = globalEdges.get(key);
-          record.byZone.set(zoneId, (record.byZone.get(zoneId) || 0) + 1);
-        }
-      });
-    });
-  });
-
-  const boundaryFeatures = [];
-
-  featuresByZone.forEach((_, zoneId) => {
-    const segments = [];
-
-    globalEdges.forEach((record) => {
-      const count = record.byZone.get(zoneId) || 0;
-      if (count === 1) {
-        segments.push([record.start, record.end]);
-      }
-    });
-
-    if (segments.length) {
-      boundaryFeatures.push({
-        type: "Feature",
-        properties: { zone_id: zoneId, zone_name: `Zone ${zoneId}` },
-        geometry: {
-          type: "MultiLineString",
-          coordinates: segments,
-        },
-      });
-    }
-  });
-
-  return {
-    type: "FeatureCollection",
-    features: boundaryFeatures,
-  };
-}
-
 export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) {
   if (!geojson?.features?.length) {
-    return { zones: null, markers: [], boundaries: null };
+    return { zones: null, markers: [] };
   }
 
   const zoneCount = Math.max(
@@ -211,7 +129,6 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
           wardNames: [],
           x: 0,
           y: 0,
-          features: [],
         });
       }
 
@@ -219,7 +136,6 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
       zone.wardCount += 1;
       zone.x += centroids[index][0];
       zone.y += centroids[index][1];
-      zone.features.push(feature);
 
       if (feature.properties?.KGISWardName) {
         zone.wardNames.push(feature.properties.KGISWardName);
@@ -231,7 +147,7 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
           ...feature.properties,
           zone_id: zoneId,
           zone_name: `Zone ${zoneId}`,
-          score: null,
+          score: (zoneId * 29) % 100,
         },
       };
     }),
@@ -241,6 +157,7 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
     zoneId: zone.zoneId,
     center: [zone.y / zone.wardCount, zone.x / zone.wardCount],
     wardCount: zone.wardCount,
+    score: (zone.zoneId * 29) % 100,
     wardNames: zone.wardNames,
   }));
 
@@ -259,15 +176,8 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
     };
   });
 
-  const featuresByZone = new Map(
-    Array.from(zoneStats.values()).map((zone) => [zone.zoneId, zone.features]),
-  );
-
-  const boundaries = buildZoneBoundaries(featuresByZone);
-
   return {
     zones,
     markers,
-    boundaries,
   };
 }
