@@ -127,6 +127,7 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
           zoneId,
           wardCount: 0,
           wardNames: [],
+          wardNumbers: [],
           x: 0,
           y: 0,
         });
@@ -139,6 +140,9 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
 
       if (feature.properties?.KGISWardName) {
         zone.wardNames.push(feature.properties.KGISWardName);
+      }
+      if (feature.properties?.KGISWardNo) {
+        zone.wardNumbers.push(Number(feature.properties.KGISWardNo));
       }
 
       return {
@@ -159,19 +163,28 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
     wardCount: zone.wardCount,
     score: (zone.zoneId * 29) % 100,
     wardNames: zone.wardNames,
+    wardNumbers: zone.wardNumbers.filter((wardNo) => Number.isFinite(wardNo)),
   }));
 
   const detailsByZone = new Map(markers.map((zone) => [zone.zoneId, zone]));
 
   zones.features = zones.features.map((feature) => {
     const details = detailsByZone.get(feature.properties.zone_id);
+    const wardNumbers = details?.wardNumbers ?? [];
+    const minWardNumber = wardNumbers.length ? Math.min(...wardNumbers) : 0;
+    const maxWardNumber = wardNumbers.length ? Math.max(...wardNumbers) : 0;
+    const averageWardNumber = wardNumbers.length
+      ? (wardNumbers.reduce((sum, value) => sum + value, 0) / wardNumbers.length).toFixed(1)
+      : "0.0";
 
     return {
       ...feature,
       properties: {
         ...feature.properties,
         ward_count: details?.wardCount ?? 0,
-        ward_names: details?.wardNames ?? [],
+        ward_number_min: minWardNumber,
+        ward_number_max: maxWardNumber,
+        ward_number_avg: averageWardNumber,
       },
     };
   });

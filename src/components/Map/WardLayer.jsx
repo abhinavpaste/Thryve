@@ -21,31 +21,34 @@ function styleFeature(feature) {
 
 function onEachFeature(feature, layer) {
   const properties = feature.properties || {};
-  const wardNames = (properties.ward_names || []).slice(0, 7).join(", ");
-  const overflow = (properties.ward_names || []).length > 7 ? "…" : "";
 
   layer.bindPopup(`
     <div style="min-width: 240px; font-family: Inter, system-ui, sans-serif;">
       <h4 style="margin: 0 0 8px;">${properties.zone_name || "Zone"}</h4>
-      <div><strong>Wards merged:</strong> ${properties.ward_count || 0}</div>
-      <div style="margin-top: 6px;"><strong>Includes:</strong> ${wardNames}${overflow}</div>
+      <div><strong>Total wards merged:</strong> ${properties.ward_count || 0}</div>
+      <div style="margin-top: 6px;"><strong>Ward number span:</strong> ${properties.ward_number_min ?? 0} - ${properties.ward_number_max ?? 0}</div>
+      <div style="margin-top: 6px;"><strong>Average ward number:</strong> ${properties.ward_number_avg ?? "0.0"}</div>
     </div>
   `);
 
   layer.on({
     mouseover: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.42,
-        weight: 2,
+        fillOpacity: 0.55,
+        weight: 3,
+        color: "#f8fafc",
       });
+      e.target.bringToFront();
     },
     mouseout: (e) => {
       e.target.setStyle({
         fillOpacity: 0.28,
         weight: 1.2,
+        color: "#94a3b8",
       });
     },
     click: () => {
+      layer.openPopup();
       console.log("Merged ward zone:", properties);
     },
   });
