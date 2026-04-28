@@ -116,3 +116,22 @@ code {
 .ward-glow {
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.05));
 }
+#root {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+}
+
+.zone-count-tooltip {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.zone-count-tooltip::before {
+  display: none;
+}

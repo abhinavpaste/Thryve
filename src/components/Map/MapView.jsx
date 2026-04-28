@@ -1,22 +1,19 @@
 import { MapContainer, TileLayer } from "react-leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import WardLayer from "./WardLayer";
+import { buildMergedWards } from "./wardAggregation";
 
 export default function MapView() {
   const [wards, setWards] = useState(null);
 
   useEffect(() => {
     fetch("/data/wards.geojson")
-      .then((res) => {
-        console.log("status:", res.status);
-        return res.json();
-      })
-      .then((data) => {
-        console.log("geojson loaded:", data);
-        setWards(data);
-      })
+      .then((res) => res.json())
+      .then((data) => setWards(data))
       .catch((err) => console.error(err));
   }, []);
+
+  const { zones, markers } = useMemo(() => buildMergedWards(wards, 22), [wards]);
 
   return (
     <MapContainer
@@ -24,13 +21,11 @@ export default function MapView() {
       zoom={12}
       style={{ height: "100vh", width: "100%" }}
     >
-    <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
 
-  {/* Ward polygons */}
-  <WardLayer data={wards} />
+      <WardLayer data={zones} markers={markers} />
 
-  {/* Labels ON TOP */}
-  <TileLayer url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" />
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" />
     </MapContainer>
   );
 }
