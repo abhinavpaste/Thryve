@@ -12,10 +12,22 @@ function styleFeature(feature) {
 
   return {
     fillColor: getColor(score),
-    fillOpacity: 0.28,
-    color: "#94a3b8",
-    weight: 1.2,
-    opacity: 0.7,
+    fillOpacity: 0.32,
+    color: "#ffffff",
+    weight: 2.2,
+    opacity: 0.95,
+    className: "chunk-boundary",
+  };
+}
+
+function glowStyleFeature() {
+  return {
+    fillOpacity: 0,
+    color: "#ffffff",
+    weight: 8,
+    opacity: 0.5,
+    className: "chunk-boundary-glow",
+    interactive: false,
   };
 }
 
@@ -34,17 +46,17 @@ function onEachFeature(feature, layer) {
   layer.on({
     mouseover: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.55,
-        weight: 3,
-        color: "#f8fafc",
+        fillOpacity: 0.62,
+        weight: 2.8,
+        color: "#ffffff",
       });
       e.target.bringToFront();
     },
     mouseout: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.28,
-        weight: 1.2,
-        color: "#94a3b8",
+        fillOpacity: 0.32,
+        weight: 2.2,
+        color: "#ffffff",
       });
       layer.closePopup();
     },
@@ -62,13 +74,15 @@ export default function WardLayer({ data, markers }) {
 
   return (
     <>
-      <GeoJSON data={data} style={styleFeature} onEachFeature={onEachFeature} />
+      <GeoJSON data={data} style={glowStyleFeature} pane="chunk-boundary-glow" />
+      <GeoJSON data={data} style={styleFeature} onEachFeature={onEachFeature} pane="chunk-polygons" />
 
       {markers.map((marker) => (
         <CircleMarker
           key={marker.zoneId}
           center={marker.center}
           radius={16}
+          pane="chunk-markers"
           pathOptions={{
             color: getColor(marker.score),
             fillColor: getColor(marker.score),
