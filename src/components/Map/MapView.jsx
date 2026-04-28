@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import WardLayer from "./WardLayer";
 import { buildMergedWards } from "./wardAggregation";
 
-export default function MapView() {
+export default function MapView({ onZoneClick }){
   const [wards, setWards] = useState(null);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export default function MapView() {
   }, []);
 
   const { zones, markers } = useMemo(() => buildMergedWards(wards, 22), [wards]);
-
+console.log("onZoneClick:", onZoneClick);
   return (
     <MapContainer
       center={[12.9716, 77.5946]}
@@ -27,7 +27,11 @@ export default function MapView() {
       <Pane name="chunk-polygons" style={{ zIndex: 440 }} />
       <Pane name="chunk-markers" style={{ zIndex: 460 }} />
 
-      <WardLayer data={zones} markers={markers} />
+      <WardLayer
+  data={zones}
+  markers={markers}
+  onZoneClick={onZoneClick}
+/>
 
       <TileLayer url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" />
     </MapContainer>

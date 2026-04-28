@@ -170,21 +170,18 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
 
   zones.features = zones.features.map((feature) => {
     const details = detailsByZone.get(feature.properties.zone_id);
-    const wardNumbers = details?.wardNumbers ?? [];
-    const minWardNumber = wardNumbers.length ? Math.min(...wardNumbers) : 0;
-    const maxWardNumber = wardNumbers.length ? Math.max(...wardNumbers) : 0;
-    const averageWardNumber = wardNumbers.length
-      ? (wardNumbers.reduce((sum, value) => sum + value, 0) / wardNumbers.length).toFixed(1)
-      : "0.0";
 
     return {
       ...feature,
       properties: {
         ...feature.properties,
         ward_count: details?.wardCount ?? 0,
-        ward_number_min: minWardNumber,
-        ward_number_max: maxWardNumber,
-        ward_number_avg: averageWardNumber,
+        ward_names: details?.wardNames ?? [],
+        zone_history: [
+          `Legacy wards: ${(details?.wardNames ?? []).slice(0, 4).join(", ")}${(details?.wardNames ?? []).length > 4 ? ", …" : ""}`,
+          `Consolidated profile: grouped as Zone ${feature.properties.zone_id} for shared planning.`,
+          `Current structure: ${details?.wardCount ?? 0} wards spanning numbers ${Math.min(...(details?.wardNumbers ?? [0]))} to ${Math.max(...(details?.wardNumbers ?? [0]))}.`,
+        ],
       },
     };
   });

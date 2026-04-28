@@ -1,5 +1,6 @@
 import { CircleMarker, GeoJSON, Tooltip } from "react-leaflet";
 
+/* ---------- COLOR LOGIC ---------- */
 function getColor(score) {
   if (score >= 80) return "#22c55e";
   if (score >= 60) return "#84cc16";
@@ -7,90 +8,109 @@ function getColor(score) {
   return "#ef4444";
 }
 
+/* ---------- MAIN STYLE ---------- */
 function styleFeature(feature) {
   const score = feature.properties?.score ?? 50;
 
   return {
     fillColor: getColor(score),
-    fillOpacity: 0.32,
-    color: "#ffffff",
-    weight: 2.2,
-    opacity: 0.95,
-    className: "chunk-boundary",
+    fillOpacity: 0.22,
+
+    color: "#94a3b8",   // soft boundary
+    weight: 0.6,
+    opacity: 0.25,
   };
 }
 
+/* ---------- GLOW ---------- */
 function glowStyleFeature() {
   return {
     fillOpacity: 0,
     color: "#ffffff",
-    weight: 8,
-    opacity: 0.5,
-    className: "chunk-boundary-glow",
+    weight: 2,
+    opacity: 0.12,
     interactive: false,
   };
 }
 
-function onEachFeature(feature, layer) {
+/* ---------- INTERACTIONS ---------- */
+function onEachFeature(feature, layer, onZoneClick) {
   const properties = feature.properties || {};
 
   layer.bindPopup(`
-    <div style="min-width: 240px; font-family: Inter, system-ui, sans-serif;">
-      <h4 style="margin: 0 0 8px;">${properties.zone_name || "Zone"}</h4>
-      <div><strong>Total wards merged:</strong> ${properties.ward_count || 0}</div>
-      <div style="margin-top: 6px;"><strong>Ward number span:</strong> ${properties.ward_number_min ?? 0} - ${properties.ward_number_max ?? 0}</div>
-      <div style="margin-top: 6px;"><strong>Average ward number:</strong> ${properties.ward_number_avg ?? "0.0"}</div>
+    <div style="min-width: 200px; font-family: Inter;">
+      <h4>${properties.zone_name || "Zone"}</h4>
+      <div>Wards: ${properties.ward_count || 0}</div>
     </div>
   `);
 
   layer.on({
     mouseover: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.62,
-        weight: 2.8,
-        color: "#ffffff",
+        fillOpacity: 0.35,
       });
-      e.target.bringToFront();
     },
+
     mouseout: (e) => {
       e.target.setStyle({
-        fillOpacity: 0.32,
-        weight: 2.2,
-        color: "#ffffff",
+        fillOpacity: 0.22,
       });
-      layer.closePopup();
     },
+
     click: () => {
-      layer.openPopup();
-      console.log("Merged ward zone:", properties);
+      if (onZoneClick) {
+        onZoneClick(properties.zone_id); // 🔥 key line
+      }
     },
   });
 }
 
-export default function WardLayer({ data, markers }) {
-  if (!data) {
-    return null;
-  }
+/* ---------- COMPONENT ---------- */
+export default function WardLayer({
+  data,
+  markers = [],
+  onZoneClick,
+}) {
+  if (!data) return null;
 
   return (
     <>
-      <GeoJSON data={data} style={glowStyleFeature} pane="chunk-boundary-glow" />
-      <GeoJSON data={data} style={styleFeature} onEachFeature={onEachFeature} pane="chunk-polygons" />
+      {/* Glow layer */}
+      <GeoJSON
+        data={data}
+        style={glowStyleFeature}
+        pane="chunk-boundary-glow"
+      />
 
+      {/* Main polygons */}
+      <GeoJSON
+        data={data}
+        style={styleFeature}
+        onEachFeature={(feature, layer) =>
+          onEachFeature(feature, layer, onZoneClick)
+        }
+        pane="chunk-polygons"
+      />
+
+      {/* Markers */}
       {markers.map((marker) => (
         <CircleMarker
           key={marker.zoneId}
           center={marker.center}
-          radius={16}
+          radius={20}
           pane="chunk-markers"
           pathOptions={{
             color: getColor(marker.score),
             fillColor: getColor(marker.score),
-            fillOpacity: 0.35,
+            fillOpacity: 0.18,
             weight: 2,
           }}
         >
-          <Tooltip permanent direction="center" className="zone-count-tooltip">
+          <Tooltip
+            permanent
+            direction="center"
+            className="zone-count-tooltip"
+          >
             {marker.wardCount}
           </Tooltip>
         </CircleMarker>

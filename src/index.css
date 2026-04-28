@@ -140,3 +140,28 @@ code {
 .zone-count-tooltip::before {
   display: none;
 }
+.zone-count-tooltip {
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.9),
+    0 0 12px rgba(255,255,255,0.6);
+}
+
+.chunk-boundary {
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.05));
+}
+.leaflet-tile {
+  filter: brightness(1.05) contrast(1.15);
+}
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;   /* 🔥 disables scroll */
+}
+body {
+  font-family: 'Inter', sans-serif;
+}
