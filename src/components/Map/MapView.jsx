@@ -1,6 +1,7 @@
 import { MapContainer, Pane, TileLayer } from "react-leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import WardLayer from "./WardLayer";
+import { buildMergedWards } from "./wardAggregation";
 
 export default function MapView() {
   const [wards, setWards] = useState(null);
@@ -12,19 +13,21 @@ export default function MapView() {
       .catch((err) => console.error(err));
   }, []);
 
+  const { zones, markers } = useMemo(() => buildMergedWards(wards, 22), [wards]);
+
   return (
     <MapContainer
       center={[12.9716, 77.5946]}
       zoom={12}
       style={{ height: "100vh", width: "100%" }}
-      className="map-theme"
     >
       <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
 
-      <Pane name="ward-boundary-glow" style={{ zIndex: 430 }} />
-      <Pane name="ward-polygons" style={{ zIndex: 440 }} />
+      <Pane name="chunk-boundary-glow" style={{ zIndex: 430 }} />
+      <Pane name="chunk-polygons" style={{ zIndex: 440 }} />
+      <Pane name="chunk-markers" style={{ zIndex: 460 }} />
 
-      <WardLayer data={wards} />
+      <WardLayer data={zones} markers={markers} />
 
       <TileLayer url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" />
     </MapContainer>
