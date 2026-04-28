@@ -127,6 +127,7 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
           zoneId,
           wardCount: 0,
           wardNames: [],
+          wardNumbers: [],
           x: 0,
           y: 0,
         });
@@ -139,6 +140,9 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
 
       if (feature.properties?.KGISWardName) {
         zone.wardNames.push(feature.properties.KGISWardName);
+      }
+      if (feature.properties?.KGISWardNo) {
+        zone.wardNumbers.push(Number(feature.properties.KGISWardNo));
       }
 
       return {
@@ -159,6 +163,7 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
     wardCount: zone.wardCount,
     score: (zone.zoneId * 29) % 100,
     wardNames: zone.wardNames,
+    wardNumbers: zone.wardNumbers.filter((wardNo) => Number.isFinite(wardNo)),
   }));
 
   const detailsByZone = new Map(markers.map((zone) => [zone.zoneId, zone]));
@@ -172,6 +177,11 @@ export function buildMergedWards(geojson, targetZoneCount = DEFAULT_ZONE_COUNT) 
         ...feature.properties,
         ward_count: details?.wardCount ?? 0,
         ward_names: details?.wardNames ?? [],
+        zone_history: [
+          `Legacy wards: ${(details?.wardNames ?? []).slice(0, 4).join(", ")}${(details?.wardNames ?? []).length > 4 ? ", …" : ""}`,
+          `Consolidated profile: grouped as Zone ${feature.properties.zone_id} for shared planning.`,
+          `Current structure: ${details?.wardCount ?? 0} wards spanning numbers ${Math.min(...(details?.wardNumbers ?? [0]))} to ${Math.max(...(details?.wardNumbers ?? [0]))}.`,
+        ],
       },
     };
   });
