@@ -46,6 +46,7 @@ function onEachFeature(feature, layer) {
         weight: 1.2,
         color: "#94a3b8",
       });
+      layer.closePopup();
     },
     click: () => {
       layer.openPopup();
