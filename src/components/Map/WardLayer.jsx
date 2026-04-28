@@ -10,6 +10,7 @@ function getColor(score) {
 function styleFeature(feature) {
   const score = feature.properties?.score ?? 50;
 
+function styleBoundary() {
   return {
     fillColor: getColor(score),
     fillOpacity: 0.28,
