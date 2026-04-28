@@ -17,7 +17,6 @@ export default function MapView() {
 
   return (
     <MapContainer
-      className="blue-theme-map"
       center={[12.9716, 77.5946]}
       zoom={12}
       style={{ height: "100vh", width: "100%" }}
